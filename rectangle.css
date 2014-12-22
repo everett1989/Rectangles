@@ -1,0 +1,51 @@
+
+body{
+	background-color: #DDD9D9;
+}
+
+canvas{
+	background:white;
+	border: 1px black solid;
+	cursor:crosshair;
+	box-shadow:0 0 5px;
+}
+
+button{
+	width:100px;
+	height:40px;
+	box-shadow:0 0 5px;
+}
+
+.container{
+	/*background:grey;*/
+	margin-top:100px;
+	width: 600px;
+	margin: 0 auto;
+}
+
+#selectColor{
+	/*float:left;*/
+}
+
+span#rectangleInfo{
+	float:right;
+	font-size: 20px;
+	background: #FFF;
+	padding: 4px;
+	box-shadow:0 0 5px;
+}
+
+.getInput{
+	box-shadow:0 0 5px;
+	background: #ADADBD;
+	padding:10px;
+}
+
+#greenLabel{
+	color:green;
+}
+
+#redLabel{
+	color:red;
+}
+
