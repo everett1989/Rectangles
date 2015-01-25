@@ -12,8 +12,8 @@ var rectangleObj = { //Save rectangle objects in dictionary for iteration
 	red : new rectangle(0,0,0,0,"red")
 };
 
-var green = rectangleObj.green; //save objects in variables for easier programming
-var red = rectangleObj.red;
+// var green = rectangleObj.green; //save objects in variables for easier programming
+// var red = rectangleObj.red;
 
 function rectangle(posX,posY,recLength,recHeight,color){ //set rectangle properties
 	this.posX = posX;
@@ -40,9 +40,9 @@ function resetAll(){ //resets all rectangle object properties to 0 (except for c
 function getCurrentRectangleFromRadio(){ //returns rectanlge object according to radio selected
 	var check;
 	if(greenRadio.is(':checked'))
-		check = green;
+		check = rectangleObj.green;
 	else if(redRadio.is(':checked'))
-		check = red;
+		check = rectangleObj.red;
 
 	return check;
 }
@@ -79,7 +79,7 @@ function updateRectangle(){
 			}
 
 			context.clearRect (0, 0, canvas.width, canvas.height);// Clears canvas
-			postResults(green, red); //posts results to HTML page
+			postResults(rectangleObj.green, rectangleObj.red); //posts results to HTML page
 			drawRectangles(); //Draws all the rectangles			
 		});
 
@@ -116,10 +116,10 @@ function getIntersectPoints(rec1, rec2){ //did not complete this
 	var points1 = rec1.getCoord();
 	var points2 = rec2.getCoord();
 
-	var xTop = Math.max(points1["topL"]['x'], points2["topL"]['x']);
-	var yTop = Math.max(points1["topL"]['y'], points2["topL"]['y']);
-	var xBottom = Math.min(points1["bottomR"]['x'], points2["bottomR"]['x']);
-	var yBottom = Math.min(points1["bottomR"]['y'],points2["bottomR"]['y']);
+	var xTop = Math.max(points1.topL.x, points2.topL.x);
+	var yTop = Math.max(points1.topL.y, points2.topL.y);
+	var xBottom = Math.min(points1.bottomR.x, points2.bottomR.x);
+	var yBottom = Math.min(points1.bottomR.y,points2.bottomR.y);
 
 	return {'topL':[xTop, yTop], 'bottomR':[xBottom, yBottom]};
 }
@@ -129,10 +129,13 @@ function intersectExists(rec1,rec2){ //returns true if two rectangles intersect
 	var points2 = rec2.getCoord();
 
 	var doesIntersect = 
-		!(points1["bottomR"]['x'] < points2["topL"]['x'] ||
-		points2["bottomR"]['x'] < points1["topL"]['x'] ||
-		points1["bottomR"]['y'] < points2["topL"]['y'] ||
-		points2["bottomR"]['y'] < points1["topL"]['y']);
+		points1.bottomR.x > points2.topL.x &&
+		points2.bottomR.x > points1.topL.x &&
+		points1.bottomR.y > points2.topL.y &&
+		points2.bottomR.y > points1.topL.y;
+
+		// console.log(points1.bottomR.x);
+		console.log("X:"+points1.bottomR.x+"  Y: "+(canvas.height - points1.bottomR.y));
 
 	return doesIntersect;
 }
@@ -143,81 +146,40 @@ function containmentExists(rec1, rec2){ // returns true if a rectangle is contai
 	var points2 = rec2.getCoord();
 
 	var isContain1 =
-	points1['topL']['x'] < points2["topL"]['x'] &&
-	points1['bottomR']['x'] > points2["bottomR"]['x'] &&
-	points1['topL']['y'] < points2["topL"]['y'] &&
-	points1['bottomR']['y'] > points2["bottomR"]['y'];
+	points1.topL.x < points2.topL.x &&
+	points1.bottomR.x > points2.bottomR.x &&
+	points1.topL.y < points2.topL.y &&
+	points1.bottomR.y > points2.bottomR.y;
 
 	var isContain2 =
-	points1['topL']['x'] > points2["topL"]['x'] &&
-	points1['bottomR']['x'] < points2["bottomR"]['x'] &&
-	points1['topL']['y'] > points2["topL"]['y'] &&
-	points1['bottomR']['y'] < points2["bottomR"]['y'];
+	points1.topL.x > points2.topL.x &&
+	points1.bottomR.x < points2.bottomR.x &&
+	points1.topL.y > points2.topL.y &&
+	points1.bottomR.y < points2.bottomR.y;
 
 	return isContain1 || isContain2;
 }
 
 function adjacentExists(rec1, rec2){// Did not start this
-	var adjacentThreshold = 5;
 
 	var pts1 = rec1.getCoord();
 	var pts2 = rec2.getCoord();
 
-	var maxPosTopX = Math.max(pts1["topL"]["x"], pts2["topL"]["x"]);
-	var maxPosBottomX = Math.max(pts1["bottomR"]["x"], pts2["bottomR"]["x"]);
-	var minPosTopX = Math.min(pts1["topL"]["x"], pts2["topL"]["x"]);
-	var minPosBottomX = Math.min(pts1["bottomR"]["x"], pts2["bottomR"]["x"]);
+	var threshold = -1;
 
-	var minLengthX =  minPosBottomX - minPosTopX ;
-	var maxLengthX =   maxPosBottomX - maxPosTopX; 
+	var isAdj = 
+		(pts1.bottomR.y - pts2.topL.y <= 0 && pts1.bottomR.y - pts2.topL.y >= threshold) ||
+		(pts1.bottomR.x - pts2.topL.x <= 0 && pts1.bottomR.x - pts2.topL.x >= threshold) ||
+		(pts2.bottomR.y - pts1.topL.y <= 0 && pts2.bottomR.y - pts1.topL.y >= threshold) ||
+		(pts2.bottomR.x - pts1.topL.x <= 0 && pts2.bottomR.x - pts1.topL.x >= threshold);
 
-	var maxPosTopY = Math.max(pts1["topL"]["y"], pts2["topL"]["y"]);
-	var maxPosBottomY = Math.max(pts1["bottomR"]["y"], pts2["bottomR"]["y"]);
-	var minPosTopY = Math.min(pts1["topL"]["y"], pts2["topL"]["y"]);
-	var minPosBottomY = Math.min(pts1["bottomR"]["y"], pts2["bottomR"]["y"]);
+	var isWithinSide = 
+		(pts1.topL.x <= pts2.topL.x && pts1.bottomR.x >= pts2.bottomR.x) ||
+		(pts1.topL.y <= pts2.topL.y && pts1.bottomR.y >= pts2.bottomR.y) ||
+		(pts2.topL.x <= pts1.topL.x && pts2.bottomR.x >= pts1.bottomR.x) ||
+		(pts2.topL.y <= pts1.topL.y && pts2.bottomR.y >= pts1.bottomR.y);
 
-	var minLengthY =  minPosBottomY - minPosTopY ;
-	var maxLengthY =   maxPosBottomY - maxPosTopY;
-
-	var totalLengthX = maxLengthX + minLengthX;
-	var totalLengthY = maxLengthY + minLengthY
-
-
-
-	var totalXDiff= maxPosBottomX - minPosTopX - (totalLengthX) ;
-	var totalYDiff= maxPosBottomY - minPosTopY - (totalLengthY) ;
-
-	console.log("diffMax: "+(maxLengthX));
-	console.log("diffMin: "+(minLengthX));
-
-
-	console.log("totalLengthY :"+ totalLengthX+"\n")
-
-
-	// var is = (minPosTopY < maxPosTopY && minPosBottomY < maxPosBottomY )
-	// var is = (Math.abs(totalYDiff));
-
-	// var thres = Math.abs(totalYDiff) +
-
-
-	// console.log("minPosTopY: "+minPosTopY+" < maxPosTopY :"+maxPosTopY+" && minPosBottomY: "+minPosBottomY+" < maxPosBottomY: "+maxPosBottomY );
-
-	console.log(totalXDiff );
-	console.log("min length: "+minLengthX );
-
-	
-
-	var xAdj = minPosBottomX - maxPosTopX;
-
-	console.log("xAdj: "+xAdj);
-
-	console.log(xAdj > 0 && xAdj < minLengthX)
-
-	console.log(xAdj+minLengthX);
-
-
-	console.log("TotalXDiff: "+(totalXDiff));
-	console.log("TotalYDiff: "+(totalYDiff));
+	return(isWithinSide && isAdj);
 
 }
 
@@ -229,10 +191,10 @@ function postResults(rec1, rec2){ //Writes results to span #post in html page
 
 	if(isIntersects && isContains)
 		post.text("Contains");
-	else if(isIntersects)
-		post.text("Intersects");
 	else if(isAdjacent)
 		post.text("Is Adjacent");
+	else if(isIntersects)
+		post.text("Intersects");
 	else
 		post.text("Nothing Happening");
 }
