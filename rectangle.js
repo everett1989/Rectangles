@@ -135,27 +135,24 @@ $(document).ready(function(){
 
 	function intersectExists(){ //returns true if two rectangles intersect
 
+		/*
+		var doesIntersect = 
+			greenPts.bottomR.x > redPts.topL.x &&
+			redPts.bottomR.x > greenPts.topL.x &&
+			greenPts.bottomR.y > redPts.topL.y &&
+			redPts.bottomR.y > greenPts.topL.y;
+		*/
 
-		// var doesIntersect = 
-		// 	greenPts.bottomR.x > redPts.topL.x &&
-		// 	redPts.bottomR.x > greenPts.topL.x &&
-		// 	greenPts.bottomR.y > redPts.topL.y &&
-		// 	redPts.bottomR.y > greenPts.topL.y;
-
-		// 	getIntersectPoints();
 
 		var xTop = Math.max(greenPts.topL.x, redPts.topL.x);
 		var yTop = Math.max(greenPts.topL.y, redPts.topL.y);
 		var xBottom = Math.min(greenPts.bottomR.x, redPts.bottomR.x);
 		var yBottom = Math.min(greenPts.bottomR.y,redPts.bottomR.y);
 
-
-
 		var doesIntersect = xTop < xBottom && yTop < yBottom;
 
 		if(doesIntersect){
 			context.fillText("("+xBottom+","+(canvas.height - yTop)+")",xBottom,yTop);//bottom right point
-			// context.fillRect(xBottom - 3,yTop - 3,5,5);
 			context.fillText("("+xTop+","+(canvas.height - yBottom)+")",xTop,yBottom);//
 			context.fillText("("+xBottom+","+(canvas.height - yBottom)+")",xBottom,yBottom);//bottom right point
 			context.fillText("("+xTop+","+(canvas.height - yTop)+")",xTop,yTop);//
@@ -182,7 +179,7 @@ $(document).ready(function(){
 		return isContain1 || isContain2;
 	}
 
-	function adjacentExists(){// Did not start this
+	function adjacentExists(){//Returns true if rectangles are adjacent
 		var threshold = -1;
 
 		var isAdj = 
