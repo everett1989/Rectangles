@@ -5,6 +5,10 @@ $(document).ready(function(){
 	var context = canvas.getContext("2d"); //get context from canvas
 	canvas.width  = 600;
 	canvas.height = 400;
+	var fontSize = 13;
+	// var adjThreshold = threshold + fontSize;
+	context.font= fontSize+"px Sans Serif";
+
 
 	var greenRadio = $("input#green"); //cache green radio
 	var redRadio = $("input#red"); //cache red radio
@@ -111,15 +115,17 @@ $(document).ready(function(){
 		});		
 	}
 
+	
 	function drawCoordinates(){
-		context.fillText("("+greenPts.topL.x+","+(canvas.height - greenPts.topL.y)+")",greenPts.topL.x,greenPts.topL.y);//top left point
-		context.fillText("("+greenPts.bottomR.x+","+(canvas.height - greenPts.topL.y)+")",greenPts.bottomR.x,greenPts.topL.y);//top right point
-		context.fillText("("+greenPts.topL.x+","+(canvas.height - greenPts.bottomR.y)+")",greenPts.topL.x,greenPts.bottomR.y);//bottom left point
-		context.fillText("("+greenPts.bottomR.x+","+(canvas.height-greenPts.bottomR.y)+")",greenPts.bottomR.x,greenPts.bottomR.y);//bottom right point
-		context.fillText("("+redPts.topL.x+","+(canvas.height - redPts.topL.y)+")",redPts.topL.x,redPts.topL.y);//top left point
-		context.fillText("("+redPts.bottomR.x+","+(canvas.height - redPts.topL.y)+")",redPts.bottomR.x,redPts.topL.y);//top right point
-		context.fillText("("+redPts.topL.x+","+(canvas.height - redPts.bottomR.y)+")",redPts.topL.x,redPts.bottomR.y);//bottom left point
-		context.fillText("("+redPts.bottomR.x+","+(canvas.height - redPts.bottomR.y)+")",redPts.bottomR.x,redPts.bottomR.y);//bottom right point
+		
+		context.fillText("("+greenPts.topL.x+", "+(canvas.height - greenPts.topL.y)+")",greenPts.topL.x, greenPts.topL.y);//top left point
+		context.fillText("("+greenPts.bottomR.x+", "+(canvas.height - greenPts.topL.y)+")",greenPts.bottomR.x, greenPts.topL.y);//top right point
+		context.fillText("("+greenPts.topL.x+", "+(canvas.height - greenPts.bottomR.y)+")",greenPts.topL.x, greenPts.bottomR.y);//bottom left point
+		context.fillText("("+greenPts.bottomR.x+", "+(canvas.height-greenPts.bottomR.y)+")",greenPts.bottomR.x, greenPts.bottomR.y);//bottom right point
+		context.fillText("("+redPts.topL.x+", "+(canvas.height - redPts.topL.y)+")",redPts.topL.x, redPts.topL.y);//top left point
+		context.fillText("("+redPts.bottomR.x+", "+(canvas.height - redPts.topL.y)+")",redPts.bottomR.x, redPts.topL.y);//top right point
+		context.fillText("("+redPts.topL.x+", "+(canvas.height - redPts.bottomR.y)+")",redPts.topL.x, redPts.bottomR.y);//bottom left point
+		context.fillText("("+redPts.bottomR.x+", "+(canvas.height - redPts.bottomR.y)+")",redPts.bottomR.x, redPts.bottomR.y);//bottom right point
 	}
 
 	rectangle.prototype.getCoord = function(){ // Get coordinates of object rectangle and returns it in a dictionary
@@ -152,10 +158,10 @@ $(document).ready(function(){
 		var doesIntersect = xTop < xBottom && yTop < yBottom;
 
 		if(doesIntersect){
-			context.fillText("("+xBottom+","+(canvas.height - yTop)+")",xBottom,yTop);//bottom right point
-			context.fillText("("+xTop+","+(canvas.height - yBottom)+")",xTop,yBottom);//
-			context.fillText("("+xBottom+","+(canvas.height - yBottom)+")",xBottom,yBottom);//bottom right point
-			context.fillText("("+xTop+","+(canvas.height - yTop)+")",xTop,yTop);//
+			context.fillText("("+xBottom+", "+(canvas.height - yTop)+")",xBottom, yTop);//bottom right point
+			context.fillText("("+xTop+", "+(canvas.height - yBottom)+")",xTop, yBottom);//
+			context.fillText("("+xBottom+", "+(canvas.height - yBottom)+")",xBottom, yBottom);//bottom right point
+			context.fillText("("+xTop+", "+(canvas.height - yTop)+")",xTop, yTop);//
 		}
 
 		return doesIntersect;
