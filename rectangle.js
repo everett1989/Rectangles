@@ -6,8 +6,14 @@ $(document).ready(function(){
 	canvas.width  = 600;
 	canvas.height = 400;
 	var fontSize = 13;
+	var textOffset = 4;
+	var dotDim = 4;
+	var dotOffset = Math.ceil(dotDim/2);
+	var dotColor = 'blue';
+	var defaultColor = 'black';
 	// var adjThreshold = threshold + fontSize;
 	context.font= fontSize+"px Sans Serif";
+	// context.fillStyle = 'blue';
 
 
 	var greenRadio = $("input#green"); //cache green radio
@@ -117,15 +123,18 @@ $(document).ready(function(){
 
 	
 	function drawCoordinates(){
-		
-		context.fillText("("+greenPts.topL.x+", "+(canvas.height - greenPts.topL.y)+")",greenPts.topL.x, greenPts.topL.y);//top left point
-		context.fillText("("+greenPts.bottomR.x+", "+(canvas.height - greenPts.topL.y)+")",greenPts.bottomR.x, greenPts.topL.y);//top right point
-		context.fillText("("+greenPts.topL.x+", "+(canvas.height - greenPts.bottomR.y)+")",greenPts.topL.x, greenPts.bottomR.y);//bottom left point
-		context.fillText("("+greenPts.bottomR.x+", "+(canvas.height-greenPts.bottomR.y)+")",greenPts.bottomR.x, greenPts.bottomR.y);//bottom right point
-		context.fillText("("+redPts.topL.x+", "+(canvas.height - redPts.topL.y)+")",redPts.topL.x, redPts.topL.y);//top left point
-		context.fillText("("+redPts.bottomR.x+", "+(canvas.height - redPts.topL.y)+")",redPts.bottomR.x, redPts.topL.y);//top right point
-		context.fillText("("+redPts.topL.x+", "+(canvas.height - redPts.bottomR.y)+")",redPts.topL.x, redPts.bottomR.y);//bottom left point
-		context.fillText("("+redPts.bottomR.x+", "+(canvas.height - redPts.bottomR.y)+")",redPts.bottomR.x, redPts.bottomR.y);//bottom right point
+
+		context.fillStyle = 'green';
+		context.fillText("("+greenPts.topL.x+", "+(canvas.height - greenPts.topL.y)+")",greenPts.topL.x, greenPts.topL.y - textOffset);//top left point
+		context.fillText("("+greenPts.bottomR.x+", "+(canvas.height - greenPts.topL.y)+")",greenPts.bottomR.x, greenPts.topL.y - textOffset);//top right point
+		context.fillText("("+greenPts.topL.x+", "+(canvas.height - greenPts.bottomR.y)+")",greenPts.topL.x, greenPts.bottomR.y + fontSize);//bottom left point
+		context.fillText("("+greenPts.bottomR.x+", "+(canvas.height-greenPts.bottomR.y)+")",greenPts.bottomR.x, greenPts.bottomR.y + fontSize);//bottom right point
+
+		context.fillStyle = 'red';
+		context.fillText("("+redPts.topL.x+", "+(canvas.height - redPts.topL.y)+")",redPts.topL.x, redPts.topL.y - textOffset);//top left point
+		context.fillText("("+redPts.bottomR.x+", "+(canvas.height - redPts.topL.y)+")",redPts.bottomR.x, redPts.topL.y - textOffset);//top right point
+		context.fillText("("+redPts.topL.x+", "+(canvas.height - redPts.bottomR.y)+")",redPts.topL.x, redPts.bottomR.y + fontSize);//bottom left point
+		context.fillText("("+redPts.bottomR.x+", "+(canvas.height - redPts.bottomR.y)+")",redPts.bottomR.x, redPts.bottomR.y + fontSize);//bottom right point
 	}
 
 	rectangle.prototype.getCoord = function(){ // Get coordinates of object rectangle and returns it in a dictionary
@@ -138,9 +147,8 @@ $(document).ready(function(){
 		return  coord;
 	}
 
-
+	
 	function intersectExists(){ //returns true if two rectangles intersect
-
 		/*
 		var doesIntersect = 
 			greenPts.bottomR.x > redPts.topL.x &&
@@ -149,19 +157,43 @@ $(document).ready(function(){
 			redPts.bottomR.y > greenPts.topL.y;
 		*/
 
+		var xTopMax = Math.max(greenPts.topL.x, redPts.topL.x);
+		var yTopMax = Math.max(greenPts.topL.y, redPts.topL.y);
+		var xBottomMin = Math.min(greenPts.bottomR.x, redPts.bottomR.x);
+		var yBottomMin = Math.min(greenPts.bottomR.y,redPts.bottomR.y);
 
-		var xTop = Math.max(greenPts.topL.x, redPts.topL.x);
-		var yTop = Math.max(greenPts.topL.y, redPts.topL.y);
-		var xBottom = Math.min(greenPts.bottomR.x, redPts.bottomR.x);
-		var yBottom = Math.min(greenPts.bottomR.y,redPts.bottomR.y);
-
-		var doesIntersect = xTop < xBottom && yTop < yBottom;
+		var doesIntersect = xTopMax < xBottomMin && yTopMax < yBottomMin ;
 
 		if(doesIntersect){
-			context.fillText("("+xBottom+", "+(canvas.height - yTop)+")",xBottom, yTop);//bottom right point
-			context.fillText("("+xTop+", "+(canvas.height - yBottom)+")",xTop, yBottom);//
-			context.fillText("("+xBottom+", "+(canvas.height - yBottom)+")",xBottom, yBottom);//bottom right point
-			context.fillText("("+xTop+", "+(canvas.height - yTop)+")",xTop, yTop);//
+			var isContained = false;
+			context.fillStyle = dotColor;
+
+			if((greenPts.bottomR.x + greenPts.topL.y) != (xBottomMin + yTopMax) && (redPts.bottomR.x + redPts.topL.y) != (xBottomMin + yTopMax)){
+				context.fillText("("+xBottomMin+", "+(canvas.height - yTopMax)+")",xBottomMin + textOffset, yTopMax + fontSize );//Top right point
+				// context.fillStyle = dotColor;
+				context.fillRect(xBottomMin - dotOffset, yTopMax - dotOffset,dotDim,dotDim);
+				// context.fillStyle = defaultColor;
+
+			}
+			if((greenPts.topL.x + greenPts.bottomR.y) != (xTopMax + yBottomMin) && (redPts.topL.x + redPts.bottomR.y) != (xTopMax + yBottomMin)){
+				context.fillText("("+xTopMax+", "+(canvas.height - yBottomMin)+")",xTopMax + textOffset, yBottomMin - textOffset);// Bottom left point
+				// context.fillStyle = dotColor;
+				context.fillRect(xTopMax - dotOffset, yBottomMin - dotOffset,dotDim,dotDim);
+				// context.fillStyle = defaultColor;
+			}
+			if((greenPts.bottomR.x + greenPts.bottomR.y) != (xBottomMin + yBottomMin) && (redPts.bottomR.x + redPts.bottomR.y) != (xBottomMin + yBottomMin)){
+				context.fillText("("+xBottomMin+", "+(canvas.height - yBottomMin)+")",xBottomMin + textOffset, yBottomMin - textOffset);//Bottom right point
+				// context.fillStyle = dotColor;
+				context.fillRect(xBottomMin - dotOffset, yBottomMin - dotOffset,dotDim,dotDim);
+				// context.fillStyle = defaultColor;
+			}
+			if((greenPts.topL.x + greenPts.topL.y) != (xTopMax + yTopMax) && (redPts.topL.x + redPts.topL.y) != (xTopMax + yTopMax)){
+				context.fillText("("+xTopMax+", "+(canvas.height - yTopMax)+")",xTopMax + textOffset, yTopMax + fontSize);//Top left point
+				// context.fillStyle = dotColor;
+				context.fillRect(xTopMax - dotOffset, yTopMax - dotOffset,dotDim,dotDim);
+				// context.fillStyle = defaultColor;
+			}
+			context.fillStyle = defaultColor;
 		}
 
 		return doesIntersect;
