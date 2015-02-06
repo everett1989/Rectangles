@@ -5,15 +5,15 @@ $(document).ready(function(){
 	var context = canvas.getContext("2d"); //get context from canvas
 	canvas.width  = 600;
 	canvas.height = 400;
+	var lineThreshold = -1;
 	var fontSize = 13;
 	var textOffset = 4;
 	var dotDim = 4;
 	var dotOffset = Math.ceil(dotDim/2);
 	var dotColor = 'blue';
-	var defaultColor = 'black';
-	// var adjThreshold = threshold + fontSize;
-	context.font= fontSize+"px Sans Serif";
-	// context.fillStyle = 'blue';
+	var rectColor1 = 'green';
+	var rectColor2 = 'red';
+	context.font = fontSize+"px Sans Serif";
 
 
 	var greenRadio = $("input#green"); //cache green radio
@@ -21,12 +21,9 @@ $(document).ready(function(){
 	var post = $("span#rectangleInfo"); //cache span
 
 	var rectangleObj = { //Save rectangle objects in dictionary for iteration 
-		green : new rectangle(0,0,0,0,"green"),
-		red : new rectangle(0,0,0,0,"red")
+		green : new rectangle(0,canvas.height,0,0, rectColor1),
+		red : new rectangle(0,canvas.height,0,0, rectColor2)
 	};
-
-	var greenPts;
-	var redPts;
 
 	function rectangle(posX,posY,recLength,recHeight,color){ //set rectangle properties
 		this.posX = posX;
@@ -38,9 +35,27 @@ $(document).ready(function(){
 
 	rectangle.prototype.resetRectangle = function(){ //set rectangle properties to 0 (except for color)
 		this.posX = 0;
-		this.posY = 0;
+		this.posY = canvas.height;
 		this.recLength = 0;
 		this.recHeight = 0;
+	}
+
+	rectangle.prototype.setCoord = function(){ // Set coordinates of object rectangle and returns it in a dictionary
+
+		this.coord = {
+			'topL': {
+				'x' : this.posX,
+				'y' : this.posY
+			}, 
+			'bottomR': {
+				'x': this.posX + this.recLength,
+				'y' : this.posY + this.recHeight
+			} 
+		};
+	}
+
+	rectangle.prototype.getCoord = function(){ // Get coordinates of object rectangle and returns it in a dictionary
+		return  this.coord;
 	}
 
 
@@ -93,11 +108,7 @@ $(document).ready(function(){
 
 				context.clearRect (0, 0, canvas.width, canvas.height);// Clears canvas
 
-				greenPts = rectangleObj.green.getCoord();
-				redPts = rectangleObj.red.getCoord();
-				
 				drawRectangles(); //Draws all the rectangles
-				drawCoordinates();
 				postResults(); //posts results to HTML page			
 			});
 
@@ -110,45 +121,31 @@ $(document).ready(function(){
 
 
 	function drawRectangles(){ //Draws each rectangle
-
+		var coord;
 		$.each(rectangleObj, function(index, value) {
+
 			context.beginPath();
 			context.lineWidth="1";
 			context.strokeStyle= value.color;
 			context.rect(value.posX,value.posY,value.recLength,value.recHeight);
 			context.stroke();
-	
+			value.setCoord();
+
+			coord = value.getCoord();
+		 	if(value.posX + value.posY - canvas.height + value.recLength + value.recHeight != 0){
+				context.fillStyle = value.color;
+				context.fillText("("+coord.topL.x+", "+(canvas.height - coord.topL.y)+")",coord.topL.x, coord.topL.y - textOffset);//top left point
+				context.fillText("("+coord.bottomR.x+", "+(canvas.height - coord.topL.y)+")",coord.bottomR.x, coord.topL.y - textOffset);//top right point
+				context.fillText("("+coord.topL.x+", "+(canvas.height - coord.bottomR.y)+")",coord.topL.x, coord.bottomR.y + fontSize);//bottom left point
+				context.fillText("("+coord.bottomR.x+", "+(canvas.height - coord.bottomR.y)+")",coord.bottomR.x, coord.bottomR.y + fontSize);//bottom right point
+			}
 		});		
 	}
 
-	
-	function drawCoordinates(){
-
-		context.fillStyle = 'green';
-		context.fillText("("+greenPts.topL.x+", "+(canvas.height - greenPts.topL.y)+")",greenPts.topL.x, greenPts.topL.y - textOffset);//top left point
-		context.fillText("("+greenPts.bottomR.x+", "+(canvas.height - greenPts.topL.y)+")",greenPts.bottomR.x, greenPts.topL.y - textOffset);//top right point
-		context.fillText("("+greenPts.topL.x+", "+(canvas.height - greenPts.bottomR.y)+")",greenPts.topL.x, greenPts.bottomR.y + fontSize);//bottom left point
-		context.fillText("("+greenPts.bottomR.x+", "+(canvas.height-greenPts.bottomR.y)+")",greenPts.bottomR.x, greenPts.bottomR.y + fontSize);//bottom right point
-
-		context.fillStyle = 'red';
-		context.fillText("("+redPts.topL.x+", "+(canvas.height - redPts.topL.y)+")",redPts.topL.x, redPts.topL.y - textOffset);//top left point
-		context.fillText("("+redPts.bottomR.x+", "+(canvas.height - redPts.topL.y)+")",redPts.bottomR.x, redPts.topL.y - textOffset);//top right point
-		context.fillText("("+redPts.topL.x+", "+(canvas.height - redPts.bottomR.y)+")",redPts.topL.x, redPts.bottomR.y + fontSize);//bottom left point
-		context.fillText("("+redPts.bottomR.x+", "+(canvas.height - redPts.bottomR.y)+")",redPts.bottomR.x, redPts.bottomR.y + fontSize);//bottom right point
-	}
-
-	rectangle.prototype.getCoord = function(){ // Get coordinates of object rectangle and returns it in a dictionary
-		var x1 = this.posX;
-		var y1 = this.posY;
-		var x2 = this.posX + this.recLength;
-		var y2 = this.posY  + this.recHeight;
-
-		var coord = {'topL': {'x' : x1 , 'y' : y1} , 'bottomR': {'x': x2 ,'y' : y2} };
-		return  coord;
-	}
-
-	
 	function intersectExists(){ //returns true if two rectangles intersect
+
+		var greenPts = rectangleObj.green.getCoord();
+		var redPts = rectangleObj.red.getCoord();
 		/*
 		var doesIntersect = 
 			greenPts.bottomR.x > redPts.topL.x &&
@@ -165,35 +162,24 @@ $(document).ready(function(){
 		var doesIntersect = xTopMax < xBottomMin && yTopMax < yBottomMin ;
 
 		if(doesIntersect){
-			var isContained = false;
 			context.fillStyle = dotColor;
 
 			if((greenPts.bottomR.x + greenPts.topL.y) != (xBottomMin + yTopMax) && (redPts.bottomR.x + redPts.topL.y) != (xBottomMin + yTopMax)){
 				context.fillText("("+xBottomMin+", "+(canvas.height - yTopMax)+")",xBottomMin + textOffset, yTopMax + fontSize );//Top right point
-				// context.fillStyle = dotColor;
 				context.fillRect(xBottomMin - dotOffset, yTopMax - dotOffset,dotDim,dotDim);
-				// context.fillStyle = defaultColor;
-
 			}
 			if((greenPts.topL.x + greenPts.bottomR.y) != (xTopMax + yBottomMin) && (redPts.topL.x + redPts.bottomR.y) != (xTopMax + yBottomMin)){
 				context.fillText("("+xTopMax+", "+(canvas.height - yBottomMin)+")",xTopMax + textOffset, yBottomMin - textOffset);// Bottom left point
-				// context.fillStyle = dotColor;
 				context.fillRect(xTopMax - dotOffset, yBottomMin - dotOffset,dotDim,dotDim);
-				// context.fillStyle = defaultColor;
 			}
 			if((greenPts.bottomR.x + greenPts.bottomR.y) != (xBottomMin + yBottomMin) && (redPts.bottomR.x + redPts.bottomR.y) != (xBottomMin + yBottomMin)){
 				context.fillText("("+xBottomMin+", "+(canvas.height - yBottomMin)+")",xBottomMin + textOffset, yBottomMin - textOffset);//Bottom right point
-				// context.fillStyle = dotColor;
 				context.fillRect(xBottomMin - dotOffset, yBottomMin - dotOffset,dotDim,dotDim);
-				// context.fillStyle = defaultColor;
 			}
 			if((greenPts.topL.x + greenPts.topL.y) != (xTopMax + yTopMax) && (redPts.topL.x + redPts.topL.y) != (xTopMax + yTopMax)){
 				context.fillText("("+xTopMax+", "+(canvas.height - yTopMax)+")",xTopMax + textOffset, yTopMax + fontSize);//Top left point
-				// context.fillStyle = dotColor;
 				context.fillRect(xTopMax - dotOffset, yTopMax - dotOffset,dotDim,dotDim);
-				// context.fillStyle = defaultColor;
 			}
-			context.fillStyle = defaultColor;
 		}
 
 		return doesIntersect;
@@ -201,6 +187,8 @@ $(document).ready(function(){
 
 
 	function containmentExists(){ // returns true if a rectangle is contained in another
+		var greenPts = rectangleObj.green.getCoord();
+		var redPts = rectangleObj.red.getCoord();
 
 		var isContain1 =
 		greenPts.topL.x < redPts.topL.x &&
@@ -218,13 +206,15 @@ $(document).ready(function(){
 	}
 
 	function adjacentExists(){//Returns true if rectangles are adjacent
-		var threshold = -1;
 
+		var greenPts = rectangleObj.green.getCoord();
+		var redPts = rectangleObj.red.getCoord();
+		
 		var isAdj = 
-			(greenPts.bottomR.y - redPts.topL.y <= 0 && greenPts.bottomR.y - redPts.topL.y >= threshold) ||
-			(greenPts.bottomR.x - redPts.topL.x <= 0 && greenPts.bottomR.x - redPts.topL.x >= threshold) ||
-			(redPts.bottomR.y - greenPts.topL.y <= 0 && redPts.bottomR.y - greenPts.topL.y >= threshold) ||
-			(redPts.bottomR.x - greenPts.topL.x <= 0 && redPts.bottomR.x - greenPts.topL.x >= threshold);
+			(greenPts.bottomR.y - redPts.topL.y <= 0 && greenPts.bottomR.y - redPts.topL.y >= lineThreshold) ||
+			(greenPts.bottomR.x - redPts.topL.x <= 0 && greenPts.bottomR.x - redPts.topL.x >= lineThreshold) ||
+			(redPts.bottomR.y - greenPts.topL.y <= 0 && redPts.bottomR.y - greenPts.topL.y >= lineThreshold) ||
+			(redPts.bottomR.x - greenPts.topL.x <= 0 && redPts.bottomR.x - greenPts.topL.x >= lineThreshold);
 
 		var isWithinSide = 
 			(greenPts.topL.x <= redPts.topL.x && greenPts.bottomR.x >= redPts.bottomR.x) ||
