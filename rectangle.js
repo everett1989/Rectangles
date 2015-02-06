@@ -55,7 +55,7 @@ $(document).ready(function(){
 	}
 
 	rectangle.prototype.getCoord = function(){ // Get coordinates of object rectangle and returns it in a dictionary
-		return  this.coord;
+		return this.coord;
 	}
 
 
@@ -122,8 +122,11 @@ $(document).ready(function(){
 
 	function drawRectangles(){ //Draws each rectangle
 		var coord;
-		$.each(rectangleObj, function(index, value) {
+		var value;
 
+		for(key in rectangleObj){
+
+			value = rectangleObj[key];
 			context.beginPath();
 			context.lineWidth="1";
 			context.strokeStyle= value.color;
@@ -139,7 +142,7 @@ $(document).ready(function(){
 				context.fillText("("+coord.topL.x+", "+(canvas.height - coord.bottomR.y)+")",coord.topL.x, coord.bottomR.y + fontSize);//bottom left point
 				context.fillText("("+coord.bottomR.x+", "+(canvas.height - coord.bottomR.y)+")",coord.bottomR.x, coord.bottomR.y + fontSize);//bottom right point
 			}
-		});		
+		}		
 	}
 
 	function intersectExists(){ //returns true if two rectangles intersect
