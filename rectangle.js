@@ -14,6 +14,12 @@ $(document).ready(function(){
 	var rectColor1 = 'green';
 	var rectColor2 = 'red';
 	context.font = fontSize+"px Sans Serif";
+	context.lineWidth = 1;
+	var downEvent;
+    var isDown = false;
+
+	var greenIsChecked = true;
+	var redIsChecked = false;
 
 
 	var greenRadio = $("input#green"); //cache green radio
@@ -21,9 +27,13 @@ $(document).ready(function(){
 	var post = $("span#rectangleInfo"); //cache span
 
 	var rectangleObj = { //Save rectangle objects in dictionary for iteration 
-		green : new rectangle(0,canvas.height,0,0, rectColor1),
-		red : new rectangle(0,canvas.height,0,0, rectColor2)
+		// green : new rectangle(canvas.width/2 - 200,canvas.height/2 - 50, 100, 100, rectColor1),
+		// red : new rectangle(canvas.width/2 + 100,canvas.height/2 - 50, 100, 100, rectColor2)
+		green : new rectangle(0,canvas.height, 0, 0, rectColor1),
+		red : new rectangle(0,canvas.height, 0, 0, rectColor2)
 	};
+
+
 
 	function rectangle(posX,posY,recLength,recHeight,color){ //set rectangle properties
 		this.posX = posX;
@@ -67,10 +77,11 @@ $(document).ready(function(){
 
 	function getCurrentRectangleFromRadio(){ //returns rectanlge object according to radio selected
 		var check;
-		if(greenRadio.is(':checked'))
+		if(greenIsChecked){
 			check = rectangleObj.green;
-		else if(redRadio.is(':checked'))
+		}else if(redIsChecked){
 			check = rectangleObj.red;
+		}
 
 		return check;
 	}
@@ -82,18 +93,19 @@ $(document).ready(function(){
 	position the corner of the rectangle. It clears the canvas and repaints the canvas after each
 	change. Once called, this function will recursivly stay active, listening for whenever the user
 	updates which ever rectangle. 
-	*/
+	
 	function updateRectangle(){
 		var currentRectangle;
-		$(canvas).on("mousedown", function(downEvent){ //When the mouse is clicked
+		var that;
+		jCanvas.on("mousedown", function(downEvent){ //When the mouse is clicked
 			currentRectangle = getCurrentRectangleFromRadio();
-			
-			$(this).on("mousemove", function(moveEvent){ //When the mouse is moving
-				//gets the starting X and Y  coordinates(Top left corner)
+			that = $(this);
+
+			that.on("mousemove", function(moveEvent){ //When the mouse is moving
 				currentRectangle.posX = downEvent.pageX - canvas.offsetLeft; 
 				currentRectangle.posY = downEvent.pageY - canvas.offsetTop;
 
-				//gets the ending X and Y coordinates (Bottom right cornder)
+				//gets the ending X and Y coordinates (Bottom right corner)
 				currentRectangle.recLength = moveEvent.pageX - currentRectangle.posX - canvas.offsetLeft; 
 				currentRectangle.recHeight = moveEvent.pageY - currentRectangle.posY - canvas.offsetTop;
 
@@ -106,43 +118,50 @@ $(document).ready(function(){
 					currentRectangle.posY = moveEvent.pageY - canvas.offsetTop;
 				}
 
-				context.clearRect (0, 0, canvas.width, canvas.height);// Clears canvas
-
 				drawRectangles(); //Draws all the rectangles
-				postResults(); //posts results to HTML page			
+				postResults(); //posts results to HTML page
+
 			});
 
-			$(this).mouseup(function(){ //when the mouse is unclicked
+			that.mouseup(function(){ //when the mouse is unclicked
 				$(this).off(); //Stops rectangle from tracing when user releases mouse button
 				updateRectangle(); //recursivly calls itself to listen for new input
 			});
 		});
 	}
+	*/
 
 
 	function drawRectangles(){ //Draws each rectangle
 		var coord;
 		var value;
 
+
+		context.clearRect (0, 0, canvas.width, canvas.height);// Clears canvas
+
+		
+
 		for(key in rectangleObj){
 
 			value = rectangleObj[key];
-			context.beginPath();
-			context.lineWidth="1";
+			
+			
 			context.strokeStyle= value.color;
-			context.rect(value.posX,value.posY,value.recLength,value.recHeight);
+			context.strokeRect(value.posX,value.posY,value.recLength,value.recHeight);
+			context.beginPath();
 			context.stroke();
 			value.setCoord();
 
 			coord = value.getCoord();
-		 	if(value.posX + value.posY - canvas.height + value.recLength + value.recHeight != 0){
+		 	if(value.posX + value.posY - canvas.height + value.recLength + value.recHeight !== 0){
 				context.fillStyle = value.color;
 				context.fillText("("+coord.topL.x+", "+(canvas.height - coord.topL.y)+")",coord.topL.x, coord.topL.y - textOffset);//top left point
 				context.fillText("("+coord.bottomR.x+", "+(canvas.height - coord.topL.y)+")",coord.bottomR.x, coord.topL.y - textOffset);//top right point
 				context.fillText("("+coord.topL.x+", "+(canvas.height - coord.bottomR.y)+")",coord.topL.x, coord.bottomR.y + fontSize);//bottom left point
 				context.fillText("("+coord.bottomR.x+", "+(canvas.height - coord.bottomR.y)+")",coord.bottomR.x, coord.bottomR.y + fontSize);//bottom right point
 			}
-		}		
+		}
+				
 	}
 
 	function intersectExists(){ //returns true if two rectangles intersect
@@ -167,19 +186,19 @@ $(document).ready(function(){
 		if(doesIntersect){
 			context.fillStyle = dotColor;
 
-			if((greenPts.bottomR.x + greenPts.topL.y) != (xBottomMin + yTopMax) && (redPts.bottomR.x + redPts.topL.y) != (xBottomMin + yTopMax)){
+			if((greenPts.bottomR.x + greenPts.topL.y) !== (xBottomMin + yTopMax) && (redPts.bottomR.x + redPts.topL.y) !== (xBottomMin + yTopMax)){
 				context.fillText("("+xBottomMin+", "+(canvas.height - yTopMax)+")",xBottomMin + textOffset, yTopMax + fontSize );//Top right point
 				context.fillRect(xBottomMin - dotOffset, yTopMax - dotOffset,dotDim,dotDim);
 			}
-			if((greenPts.topL.x + greenPts.bottomR.y) != (xTopMax + yBottomMin) && (redPts.topL.x + redPts.bottomR.y) != (xTopMax + yBottomMin)){
+			if((greenPts.topL.x + greenPts.bottomR.y) !== (xTopMax + yBottomMin) && (redPts.topL.x + redPts.bottomR.y) !== (xTopMax + yBottomMin)){
 				context.fillText("("+xTopMax+", "+(canvas.height - yBottomMin)+")",xTopMax + textOffset, yBottomMin - textOffset);// Bottom left point
 				context.fillRect(xTopMax - dotOffset, yBottomMin - dotOffset,dotDim,dotDim);
 			}
-			if((greenPts.bottomR.x + greenPts.bottomR.y) != (xBottomMin + yBottomMin) && (redPts.bottomR.x + redPts.bottomR.y) != (xBottomMin + yBottomMin)){
+			if((greenPts.bottomR.x + greenPts.bottomR.y) !== (xBottomMin + yBottomMin) && (redPts.bottomR.x + redPts.bottomR.y) !== (xBottomMin + yBottomMin)){
 				context.fillText("("+xBottomMin+", "+(canvas.height - yBottomMin)+")",xBottomMin + textOffset, yBottomMin - textOffset);//Bottom right point
 				context.fillRect(xBottomMin - dotOffset, yBottomMin - dotOffset,dotDim,dotDim);
 			}
-			if((greenPts.topL.x + greenPts.topL.y) != (xTopMax + yTopMax) && (redPts.topL.x + redPts.topL.y) != (xTopMax + yTopMax)){
+			if((greenPts.topL.x + greenPts.topL.y) !== (xTopMax + yTopMax) && (redPts.topL.x + redPts.topL.y) !== (xTopMax + yTopMax)){
 				context.fillText("("+xTopMax+", "+(canvas.height - yTopMax)+")",xTopMax + textOffset, yTopMax + fontSize);//Top left point
 				context.fillRect(xTopMax - dotOffset, yTopMax - dotOffset,dotDim,dotDim);
 			}
@@ -193,17 +212,19 @@ $(document).ready(function(){
 		var greenPts = rectangleObj.green.getCoord();
 		var redPts = rectangleObj.red.getCoord();
 
+
+
 		var isContain1 =
-		greenPts.topL.x < redPts.topL.x &&
-		greenPts.bottomR.x > redPts.bottomR.x &&
-		greenPts.topL.y < redPts.topL.y &&
-		greenPts.bottomR.y > redPts.bottomR.y;
+			greenPts.topL.x < redPts.topL.x &&
+			greenPts.bottomR.x > redPts.bottomR.x &&
+			greenPts.topL.y < redPts.topL.y &&
+			greenPts.bottomR.y > redPts.bottomR.y;
 
 		var isContain2 =
-		greenPts.topL.x > redPts.topL.x &&
-		greenPts.bottomR.x < redPts.bottomR.x &&
-		greenPts.topL.y > redPts.topL.y &&
-		greenPts.bottomR.y < redPts.bottomR.y;
+			greenPts.topL.x > redPts.topL.x &&
+			greenPts.bottomR.x < redPts.bottomR.x &&
+			greenPts.topL.y > redPts.topL.y &&
+			greenPts.bottomR.y < redPts.bottomR.y;
 
 		return isContain1 || isContain2;
 	}
@@ -236,37 +257,86 @@ $(document).ready(function(){
 		var isContains = containmentExists();
 		var isAdjacent = adjacentExists();
 
-		if(isIntersects && isContains)
+		if(isIntersects && isContains){
 			post.text("Contains");
-		else if(isAdjacent)
+		}else if(isAdjacent){
 			post.text("Is Adjacent");
-		else if(isIntersects)
+		}else if(isIntersects){
 			post.text("Intersects");
-		else
+		}else{
 			post.text("Nothing Happening");
+		}
 	}
 
 
+	/*
+	This updates the position and dimensions of the current rectangle selected in the radio.
+	It measures the position of the mouse and the position of the canvas to calculate where to
+	position the corner of the rectangle. It clears the canvas and repaints the canvas after each
+	change.
+	*/
+    canvas.addEventListener("mousedown", function(downEventLocal){
+    	isDown = true;
+    	downEvent = downEventLocal;
+    }, true);
 
+    canvas.addEventListener("mousemove", function(moveEvent){
 
+    	if(isDown){
 
-	updateRectangle();// begins listening to user changes.
+        	currentRectangle = getCurrentRectangleFromRadio();
+
+        	currentRectangle.posX = downEvent.pageX - canvas.offsetLeft; 
+			currentRectangle.posY = downEvent.pageY - canvas.offsetTop;
+
+			//gets the ending X and Y coordinates (Bottom right corner)
+			currentRectangle.recLength = moveEvent.pageX - currentRectangle.posX - canvas.offsetLeft; 
+			currentRectangle.recHeight = moveEvent.pageY - currentRectangle.posY - canvas.offsetTop;
+
+			// console.log(currentRectangle.recLength);
+
+			if(currentRectangle.recLength < 0){ //Reverses starting X coordinate to prevent negative values
+				currentRectangle.recLength = currentRectangle.posX - currentRectangle.recLength - downEvent.pageX + canvas.offsetLeft;
+				currentRectangle.posX = moveEvent.pageX - canvas.offsetLeft;
+			}
+			if( currentRectangle.recHeight < 0){ //Reverses the starting Y coordinate to prevent negative values
+				currentRectangle.recHeight = currentRectangle.posY - currentRectangle.recHeight - downEvent.pageY + canvas.offsetTop;
+				currentRectangle.posY = moveEvent.pageY - canvas.offsetTop;
+			}
+
+			drawRectangles(); //Draws all the rectangles
+			postResults(); //posts results to HTML page
+		}
+    	           
+    }, true);
+
+    canvas.addEventListener("mouseup", function(){
+    	isDown = false;
+    }, true);
+       
 
 	$("button#reset").on("click",function(){ // Resets all rectangles when reset button is clicked and changes radio back to green
 		
 		resetAll();
-		drawRectangles();
 		context.clearRect (0, 0, canvas.width, canvas.height);
 		greenRadio.prop("checked", true);
 		redRadio.prop("checked", false);
+		greenIsChecked = true;
+		redIsChecked = false;
 	});
 
 	$("input:radio").on("change",function(){//Toggles radio
 
-		if($(this).attr('id') == "red")
+		if($(this).attr('id') == "red"){
 			greenRadio.prop("checked", false);
-		else if($(this).attr('id') == "green")
+			greenIsChecked = false;
+			redIsChecked = true;
+
+		}else if($(this).attr('id') == "green"){
 			redRadio.prop("checked", false);
+			greenIsChecked = true;
+			redIsChecked = false;
+		}
 	});
 
 });
